@@ -1,20 +1,22 @@
 """
 Database configuration for Customer Service
 """
+import re
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from shared.config.settings import settings
 
-# Create async engine
-# Convert postgresql:// to postgresql+asyncpg:// for async support
-database_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+# Build asyncpg-compatible URL (strip sslmode which asyncpg doesn't support as URL param)
+_db_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+_db_url = re.sub(r'[?&]sslmode=[^&]*', '', _db_url).rstrip('?')
 
 engine = create_async_engine(
-    database_url,
+    _db_url,
     echo=(settings.environment == "development"),
     pool_pre_ping=True,
     pool_size=10,
-    max_overflow=20
+    max_overflow=20,
+    connect_args={"ssl": False},
 )
 
 # Create async session factory
