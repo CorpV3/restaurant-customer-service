@@ -7,19 +7,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Copy and install dependencies
 COPY requirements.txt .
-COPY services/customer-service/requirements.txt ./service-requirements.txt
-
-# Install shared and service dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r service-requirements.txt
 
 # Copy shared code
 COPY shared/ /app/shared/
 
 # Copy service code
-COPY services/customer-service/app /app/app
+COPY app/ /app/app/
 
 # Create non-root user
 RUN useradd -m -u 1000 customerservice && chown -R customerservice:customerservice /app
